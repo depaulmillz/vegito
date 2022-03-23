@@ -36,7 +36,7 @@
 
 // #define HYPER
 #ifdef  HYPER // hyper threading
-
+#error "Hard coded"
 static const int per_socket_cores = 24;//TODO!! hard coded
 
 static int socket_0[] =  {
@@ -60,10 +60,12 @@ static int socket_0[] =  {
   SOCKET_0
 };
 
+#ifdef SOCKET_1
 static int socket_1[] = {
   // 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47
   SOCKET_1
 };
+#endif //SOCKET_1
 
 #endif
 

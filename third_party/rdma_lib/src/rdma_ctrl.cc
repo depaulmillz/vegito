@@ -373,7 +373,7 @@ Qp *RdmaCtrl::create_ud_qp(int tid,int dev_id,int port_idx,int idx) {
     if(qps_.find(qid) != qps_.end()) {
         res = qps_[qid];
         mtx_->unlock();
-        assert(false);
+        //assert(false);
         return res;
     }
 

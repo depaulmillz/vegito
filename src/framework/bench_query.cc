@@ -566,6 +566,8 @@ void QueryWorker::master_exit(QueryWorker *ctx, int cor_id) {
 
   printf("[Query Worker] exit:\n");
   double lat_prod = 1.0;
+  std::vector<double> lats;
+  lats.reserve(10000);
   for (int i = 0; i < workload.size(); ++i) {
     Breakdown_Timer &timer = workload[i].latency_timer;
     if (timer.size() == 0) return;
@@ -596,12 +598,16 @@ void QueryWorker::master_exit(QueryWorker *ctx, int cor_id) {
            prof.walk_cnts[i] / prof.qry_commits[i],
            med_latency);
     lat_prod *= med_latency;
+    lats.push_back(med_latency);
     // printf(",\t m %f", timer.report_medium() / second_cycle * 1000);
     printf("\n");
   }
 
-  if (workload.size() > 0)
-    printf("GM: %f ms", (float) pow(lat_prod, 1.0 / workload.size()));
+  if (workload.size() > 0) {
+    printf("GM: %f ms\n", (float) pow(lat_prod, 1.0 / workload.size()));
+    std::sort(lats.begin(), lats.end());
+    printf("p50: %f ms", lats[lats.size() / 2]);
+  }
   printf("\n");
 
   // printf("total: ");
@@ -624,13 +630,13 @@ void QueryClient::run() {
 
   uint64_t qid = 0;
 
-  for (int i = 0; i < on_fly; ++i) {
+  //for (int i = 0; i < on_fly; ++i) {
     QryReq req;
     req.start = rdtsc(); 
     req.qid = qid++;
-    bool flag = q_req_qs[i % num_session_].enqueue(req);
+    bool flag = q_req_qs[0].enqueue(req);
     assert(flag);
-  }
+  //}
 
   init_ = true;
 
@@ -640,28 +646,28 @@ void QueryClient::run() {
 
   while (1) {
     QryResp resp;
-    bool rec = q_resp_qs[s % num_session_].dequeue(resp);
+    bool rec = q_resp_qs[0].dequeue(resp);
 
     if (rec) {
       // deal with resp
       timer_.emplace(resp.end - resp.start);
 
-      ++received;
-      if (received == rate) {
-        for (int i = 0; i < rate; ++i) {
+      //++received;
+      //if (received == rate) {
+        //for (int i = 0; i < rate; ++i) {
           QryReq req;
           req.start = rdtsc();
           req.qid = qid++;
 
           // Queue<QryReq> &q = q_req_qs[send_serv % num_session_];
-          Queue<QryReq> &q = q_req_qs[s % num_session_];
+          Queue<QryReq> &q = q_req_qs[0];
           bool flag = q.enqueue(req);
           assert(flag);
           // printf("send to %lu, size %lu\n", send_serv % num_session_, q.size());
           ++send_serv;
-        }
-        received = 0;
-      } 
+        //}
+        //received = 0;
+      //} 
     }  // end if (rec)
     ++s;
   }

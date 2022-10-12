@@ -260,7 +260,8 @@ void BackupDB::Update(int tableid, uint64_t key, char *value,
   assert(store && index);
 
   BackupNode *index_node = index->Get(key);
-  assert(index_node && index_node->value_offset != -1);
+  //assert(index_node && index_node->value_offset != -1);
+  if(index_node->value_offset == -1) return;
 
   lock32(&index_node->lock);
   {

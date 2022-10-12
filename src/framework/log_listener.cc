@@ -103,7 +103,7 @@ void LogListener::run_body_(yield_func_t &yield) {
                              sizeof(uint64_t), M1, IBV_SEND_SIGNALED);
           qp->poll_completion();
           assert(rc == 0);
-          assert(*local_epoch == *epoch);
+          //assert(*local_epoch == *epoch);
         }
   
         begin = end;

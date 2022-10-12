@@ -517,36 +517,35 @@ void BenchClient::run() {
   BindToCore(thread_id_);
   printf("[Txn Client] bind CPU %d\n", thread_id_);
 
-  for (int i = 0; i < on_fly; ++i) {
+  //for (int i = 0; i < on_fly; ++i) {
     // int worker_id = prepare_worker_id();
-    int worker_id = i % num_workers_;
+    int worker_id = 0;//i % num_workers_;
     TxnReq *req = req_qs[worker_id].pre_enqueue();
     assert(req);
     req->start = rdtsc();
     // prepare_param(req->padding);
     req_qs[worker_id].post_enqueue(); 
-  }
+  //}
 
   init_ = true;
 
   uint64_t received = 0;
-  uint64_t s = 0;
   uint64_t sec_cyc = util::Breakdown_Timer::get_one_second_cycle();
   uint64_t start_ts = rdtsc();
   while (1) {
     uint64_t ts = rdtsc();
     float elapsed_sec = float(ts - start_ts) / sec_cyc;
 
-    if (elapsed_sec > 2.0 && on_fly_ > 0 && change_rate_ == 0) {
+    //if (elapsed_sec > 2.0 && on_fly_ > 0 && change_rate_ == 0) {
 #if 0
       change_rate_ = 5;  // TODO: bug!
       on_fly_ += change_rate_;
       printf("[Client] start change on fly to %d\n", on_fly_);
 #endif
       start_ts = ts;
-    }
+    //}
 
-    const TxnResp *resp = resp_qs[s % num_workers_].pre_dequeue();
+    const TxnResp *resp = resp_qs[0].pre_dequeue();
 
     if (resp) {
       // deal with resp
@@ -555,48 +554,47 @@ void BenchClient::run() {
 #if PROCESS_RESP
       process_response(resp->padding);
 #endif
-      resp_qs[s % num_workers_].post_dequeue();
+      resp_qs[0].post_dequeue();
       timer_.emplace(diff);
 
-      ++received;
+      //++received;
 
-      if (received == rate) {
-        int addition = 0;
-        if (change_rate_ < 0) {
-          change_rate_ += rate;
-          if (change_rate_ <= 0) {
-            ++s;
-            if (change_rate_ == 0)
-              printf("[Client] derease on fly to %d\n", on_fly_);
-            received = 0;
-            continue;
-          } else {
-            addition = -change_rate_;
-            change_rate_ = 0;
-          }
-        }
-        if (change_rate_ > 0) {
-          addition = (change_rate_ < rate)? change_rate_ : rate;
-          change_rate_ -= addition;
-          if (change_rate_ == 0) {
-            printf("[Client] increase on fly to %d\n", on_fly_);
-          }
-        } 
-        for (int i = 0; i < rate + addition; ++i) {
-          int worker_id = s % num_workers_;
+      //if (received == rate) {
+      //  int addition = 0;
+      //  if (change_rate_ < 0) {
+      //    change_rate_ += rate;
+      //    if (change_rate_ <= 0) {
+      //      ++s;
+      //      if (change_rate_ == 0)
+      //        printf("[Client] derease on fly to %d\n", on_fly_);
+      //      received = 0;
+      //      continue;
+      //    } else {
+      //      addition = -change_rate_;
+      //      change_rate_ = 0;
+      //    }
+      //  }
+      //  if (change_rate_ > 0) {
+      //    addition = (change_rate_ < rate)? change_rate_ : rate;
+      //    change_rate_ -= addition;
+      //    if (change_rate_ == 0) {
+      //      printf("[Client] increase on fly to %d\n", on_fly_);
+      //    }
+      //  } 
+        //for (int i = 0; i < rate + addition; ++i) {
+          //int worker_id = 0;//s % num_workers_;
           // int worker_id = prepare_worker_id();
 
           // printf("send_id: %d, receive_id %d\n", worker_id, s % num_workers_);
-          TxnReq *req = req_qs[worker_id].pre_enqueue();
+          TxnReq *req = req_qs[0].pre_enqueue();
           assert(req);
           req->start = rdtsc();
           // prepare_param(req->padding);
-          req_qs[worker_id].post_enqueue(); 
-        }
-        received = 0;
-      } 
+          req_qs[0].post_enqueue(); 
+        //}
+        //received = 0;
+      //} 
     }  
-    ++s;
 
   }
 

@@ -50,7 +50,7 @@ RWorker::RWorker(RdmaCtrl *cm, int cpu_id, int nic_id,
   assert(cm != NULL);
   if (cpu_id == -1) return;
 
-  assert(cpu_id >= 0 && cpu_id < 2 * c);  // XXX: hard code 
+  assert(cpu_id >= 0 && cpu_id < 4 * c);  // XXX: hard code 
   // assert(nic_id == 0 || nic_id == 1);
   assert(num_sroutines_ >= 0);
   if (nic_id_ != choose_nic(cpu_id_))
